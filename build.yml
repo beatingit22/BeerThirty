@@ -33,7 +33,12 @@ jobs:
 
       - name: Build
         run: gradle build --no-daemon -Ploader_version="$LOADER" -Pyarn_mappings="$YARN" -Pfabric_version="$FAPI"
-
+      - name: Fail if the jar has no mod code
+        run: |
+          JAR=$(ls build/libs/beer30-treeify-alert-*.jar | head -1)
+          unzip -l "$JAR"
+          unzip -l "$JAR" | grep -q "TreeifyAlert.class" || { echo "::error::The jar has no mod code. Make sure src/main/java/com/beer30/treeify/ exists in the repo."; exit 1; }
+          unzip -l "$JAR" | grep -q "fabric.mod.json" || { echo "::error::fabric.mod.json is missing. Make sure src/main/resources/fabric.mod.json exists in the repo."; exit 1; }
       - uses: actions/upload-artifact@v4
         with:
           name: beer30-treeify-alert
