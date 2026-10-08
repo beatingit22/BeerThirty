@@ -1,0 +1,41 @@
+name: Build mod
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.12
+
+      # Look up the newest Fabric versions for Minecraft 1.21.4 instead of hard-coding them.
+      - name: Find latest Fabric versions
+        run: |
+          LOADER=$(curl -fsS https://meta.fabricmc.net/v2/versions/loader | jq -r '[.[] | select(.stable == true)][0].version')
+          YARN=$(curl -fsS https://meta.fabricmc.net/v2/versions/yarn/1.21.4 | jq -r '.[0].version')
+          FAPI=$(curl -fsS https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/maven-metadata.xml | grep -o '<version>[^<]*+1\.21\.4</version>' | sed 's/<[^>]*>//g' | tail -1)
+          echo "loader=$LOADER yarn=$YARN fabric-api=$FAPI"
+          test -n "$LOADER" && test -n "$YARN" && test -n "$FAPI"
+          echo "LOADER=$LOADER" >> "$GITHUB_ENV"
+          echo "YARN=$YARN" >> "$GITHUB_ENV"
+          echo "FAPI=$FAPI" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: gradle build --no-daemon -Ploader_version="$LOADER" -Pyarn_mappings="$YARN" -Pfabric_version="$FAPI"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: beer30-treeify-alert
+          path: build/libs/beer30-treeify-alert-*.jar
+          if-no-files-found: error
