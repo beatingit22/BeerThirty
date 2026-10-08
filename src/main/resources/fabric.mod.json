@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "beer30treeifyalert",
+  "version": "${version}",
+  "name": "Beer30 Treeify Alert",
+  "description": "Chat message and pop-up when a Treeify proc turns the tree you are cutting into bedrock, plus shift+click a chat message to copy it.",
+  "authors": ["Beer30"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": { "client": ["com.beer30.treeify.TreeifyAlert"] },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
